@@ -1,0 +1,2 @@
+id,text,eventType,state,district,city,lat,lon,mediaUrl,source,timestamp,verificationStatus,verificationReason,confidence
+1,heavy thunderstorm,Thunderstorm,Gujarat,Ahmedabad,Ahmedabad,23.0225,72.5714,,Citizen Form,2026-09-10T22:13:00,Suspicious,No official warning found for thunderstorm in ahmedabad; extreme event claim.,0.6
