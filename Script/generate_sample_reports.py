@@ -102,18 +102,28 @@ def generate_reports():
     reports = []
     report_id = 1
 
+    # One shared timestamp range for ALL reports (for noise portion)
+    GLOBAL_START = datetime(2026, 8, 5, 0, 0, 0)
+    GLOBAL_END   = datetime(2026, 9, 8, 23, 59, 59)
+
+    all_districts = list(CITIES_BY_DISTRICT.keys())
+    all_event_types = EVENT_TYPES  # from constants
+
     # -------------------------
-    # 1. Generate Verified reports (match ground truth)
+    # 1. Guaranteed-match portion: timestamps drawn FROM ground-truth windows
     # -------------------------
-    num_verified = int(NUM_REPORTS * 0.6)  # ~60% verified
-    for _ in range(num_verified):
+    # These will naturally become Verified in most cases.
+    num_guaranteed_match = int(NUM_REPORTS * 0.35)  # ~35% Verified target
+
+    for _ in range(num_guaranteed_match):
         gt_entry = random.choice(ground_truth)
 
         state = gt_entry["state"]
         district = gt_entry["district"]
         event_type = gt_entry["eventType"]
 
-        ts_str = random_timestamp_between(gt_entry["startTime"], gt_entry["endTime"])
+        # Timestamp drawn FROM this ground-truth entry's window
+        ts = random_timestamp_between(gt_entry["startTime"], gt_entry["endTime"])
 
         city = random.choice(CITIES_BY_DISTRICT.get(district, [district]))
         lat, lon = jitter_lat_lon(*LAT_LON_BY_DISTRICT.get(district, (20.0, 80.0)))
@@ -133,7 +143,7 @@ def generate_reports():
             "lon": lon,
             "mediaUrl": media_url,
             "source": source,
-            "timestamp": ts_str,
+            "timestamp": ts,
         }
 
         v = verify_report(report)
@@ -145,23 +155,20 @@ def generate_reports():
         report_id += 1
 
     # -------------------------
-    # 2. Generate Suspicious reports (extreme events with NO match)
+    # 2. Noise portion: timestamps drawn uniformly across full campaign span
     # -------------------------
-    extreme_events = ["Flood", "Thunderstorm", "Heatwave", "Dust Storm"]
-    num_suspicious = int(NUM_REPORTS * 0.25)  # ~25% suspicious
+    num_noise = NUM_REPORTS - num_guaranteed_match
 
-    for _ in range(num_suspicious):
-        event_type = random.choice(extreme_events)
-
-        # Pick a random district from our list
-        all_districts = list(CITIES_BY_DISTRICT.keys())
+    for _ in range(num_noise):
+        # Random event type and district, not tied to any specific ground-truth entry
+        event_type = random.choice(all_event_types)
         district = random.choice(all_districts)
 
-        # Time far outside any ground-truth window
-        base_date = datetime(2026, 9, 1, 12, 0, 0)
-        offset_days = random.randint(-10, -4)  # well before any ground truth
-        ts = base_date + timedelta(days=offset_days, hours=random.randint(0, 23))
-        ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S")
+        # Timestamp from the GLOBAL range (most will NOT match any ground truth)
+        ts = random_timestamp_between(
+            GLOBAL_START.strftime("%Y-%m-%dT%H:%M:%S"),
+            GLOBAL_END.strftime("%Y-%m-%dT%H:%M:%S")
+        )
 
         state = STATES_BY_DISTRICT.get(district, "Unknown")
         city = random.choice(CITIES_BY_DISTRICT.get(district, [district]))
@@ -182,55 +189,7 @@ def generate_reports():
             "lon": lon,
             "mediaUrl": media_url,
             "source": source,
-            "timestamp": ts_str,
-        }
-
-        v = verify_report(report)
-        report["verificationStatus"] = v["verificationStatus"]
-        report["verificationReason"] = v["verificationReason"]
-        report["confidence"] = v["confidence"]
-
-        reports.append(report)
-        report_id += 1
-
-    # -------------------------
-    # 3. Generate Pending reports (ordinary events with NO match)
-    # -------------------------
-    ordinary_events = ["Rainfall", "Fog", "Strong Winds"]
-    num_pending = NUM_REPORTS - num_verified - num_suspicious
-
-    for _ in range(num_pending):
-        event_type = random.choice(ordinary_events)
-
-        all_districts = list(CITIES_BY_DISTRICT.keys())
-        district = random.choice(all_districts)
-
-        # Time far outside any ground-truth window
-        base_date = datetime(2026, 8, 20, 12, 0, 0)
-        offset_days = random.randint(-15, -5)
-        ts = base_date + timedelta(days=offset_days, hours=random.randint(0, 23))
-        ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S")
-
-        state = STATES_BY_DISTRICT.get(district, "Unknown")
-        city = random.choice(CITIES_BY_DISTRICT.get(district, [district]))
-        lat, lon = jitter_lat_lon(*LAT_LON_BY_DISTRICT.get(district, (20.0, 80.0)))
-
-        text = generate_text(event_type, district)
-        source = random.choice(SOURCES)
-        media_url = f"https://example.com/media/{report_id}.jpg"
-
-        report = {
-            "id": report_id,
-            "text": text,
-            "eventType": event_type,
-            "state": state,
-            "district": district,
-            "city": city,
-            "lat": lat,
-            "lon": lon,
-            "mediaUrl": media_url,
-            "source": source,
-            "timestamp": ts_str,
+            "timestamp": ts,
         }
 
         v = verify_report(report)
