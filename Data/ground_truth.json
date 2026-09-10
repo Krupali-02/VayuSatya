@@ -1,0 +1,26 @@
+[
+  {
+    "state": "Gujarat",
+    "district": "Ahmedabad",
+    "eventType": "Flood",
+    "startTime": "2026-09-05T10:00:00",
+    "endTime": "2026-09-05T18:00:00",
+    "severity": "Heavy"
+  },
+  {
+    "state": "Delhi",
+    "district": "Central Delhi",
+    "eventType": "Heatwave",
+    "startTime": "2026-09-06T11:00:00",
+    "endTime": "2026-09-06T17:00:00",
+    "severity": "Severe"
+  },
+  {
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "eventType": "Thunderstorm",
+    "startTime": "2026-09-04T14:00:00",
+    "endTime": "2026-09-04T20:00:00",
+    "severity": "Moderate"
+  }
+]
