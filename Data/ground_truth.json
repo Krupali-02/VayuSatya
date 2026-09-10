@@ -22,5 +22,37 @@
     "startTime": "2026-09-04T14:00:00",
     "endTime": "2026-09-04T20:00:00",
     "severity": "Moderate"
+  },
+  {
+    "state": "Maharashtra",
+    "district": "Mumbai",
+    "eventType": "Rainfall",
+    "startTime": "2026-09-03T08:00:00",
+    "endTime": "2026-09-03T20:00:00",
+    "severity": "Heavy"
+  },
+  {
+    "state": "Punjab",
+    "district": "Amritsar",
+    "eventType": "Fog",
+    "startTime": "2026-09-02T05:00:00",
+    "endTime": "2026-09-02T10:00:00",
+    "severity": "Dense"
+  },
+  {
+    "state": "Rajasthan",
+    "district": "Jaipur",
+    "eventType": "Dust Storm",
+    "startTime": "2026-09-07T15:00:00",
+    "endTime": "2026-09-07T19:00:00",
+    "severity": "Severe"
+  },
+  {
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "eventType": "Strong Winds",
+    "startTime": "2026-09-08T12:00:00",
+    "endTime": "2026-09-08T18:00:00",
+    "severity": "High"
   }
 ]
