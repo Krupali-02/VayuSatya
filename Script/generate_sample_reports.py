@@ -1,16 +1,15 @@
 # generate_sample_reports.py
 # Purpose: Generate sample_reports.csv using:
 # - constants.EVENT_TYPES
-# - data/ground_truth.json
+# - Data/ground_truth.json
 # - verification.verify_report()
 
-import json
 import csv
 import random
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Adjust imports based on your actual folder structure
 from constants import EVENT_TYPES
 from verification import verify_report
 
@@ -20,7 +19,6 @@ from verification import verify_report
 # ----------------------
 NUM_REPORTS = 200  # total rows to generate
 
-# Simple list of cities per district for demo (extend as needed)
 CITIES_BY_DISTRICT = {
     "Ahmedabad": ["Ahmedabad", "Gandhinagar"],
     "Central Delhi": ["Central Delhi", "New Delhi"],
@@ -31,7 +29,6 @@ CITIES_BY_DISTRICT = {
     "Chennai": ["Chennai"],
 }
 
-# Approximate lat/lon for demo (you can refine later)
 LAT_LON_BY_DISTRICT = {
     "Ahmedabad": (23.0225, 72.5714),
     "Central Delhi": (28.6139, 77.2090),
@@ -59,7 +56,7 @@ STATES_BY_DISTRICT = {
 # Helpers
 # ----------------------
 def load_ground_truth():
-    with open("../data/ground_truth.json", encoding="utf-8") as f:
+    with open("../Data/ground_truth.json", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -73,10 +70,6 @@ def random_timestamp_between(start_str: str, end_str: str) -> str:
 
 
 def jitter_lat_lon(lat: float, lon: float, max_offset_deg: float = 0.02) -> tuple:
-    """
-    Add small random jitter to lat/lon so reports don't stack exactly.
-    max_offset_deg ~ 0.02 degrees ≈ 2 km.
-    """
     lat_jitter = random.uniform(-max_offset_deg, max_offset_deg)
     lon_jitter = random.uniform(-max_offset_deg, max_offset_deg)
     return round(lat + lat_jitter, 4), round(lon + lon_jitter, 4)
@@ -102,19 +95,15 @@ def generate_reports():
     reports = []
     report_id = 1
 
-    # One shared timestamp range for ALL reports (for noise portion)
     GLOBAL_START = datetime(2026, 8, 5, 0, 0, 0)
     GLOBAL_END   = datetime(2026, 9, 8, 23, 59, 59)
 
     all_districts = list(CITIES_BY_DISTRICT.keys())
-    all_event_types = EVENT_TYPES  # from constants
+    all_event_types = EVENT_TYPES
 
-    # -------------------------
-    # 1. Guaranteed-match portion: timestamps drawn FROM ground-truth windows
-    # -------------------------
-    # These will naturally become Verified in most cases.
-    num_guaranteed_match = int(NUM_REPORTS * 0.35)  # ~35% Verified target
+    num_guaranteed_match = int(NUM_REPORTS * 0.35)
 
+    # 1. Guaranteed-match portion
     for _ in range(num_guaranteed_match):
         gt_entry = random.choice(ground_truth)
 
@@ -122,7 +111,6 @@ def generate_reports():
         district = gt_entry["district"]
         event_type = gt_entry["eventType"]
 
-        # Timestamp drawn FROM this ground-truth entry's window
         ts = random_timestamp_between(gt_entry["startTime"], gt_entry["endTime"])
 
         city = random.choice(CITIES_BY_DISTRICT.get(district, [district]))
@@ -150,21 +138,18 @@ def generate_reports():
         report["verificationStatus"] = v["verificationStatus"]
         report["verificationReason"] = v["verificationReason"]
         report["confidence"] = v["confidence"]
+        report["ml_credibility_score"] = v["ml_credibility_score"]
 
         reports.append(report)
         report_id += 1
 
-    # -------------------------
-    # 2. Noise portion: timestamps drawn uniformly across full campaign span
-    # -------------------------
+    # 2. Noise portion
     num_noise = NUM_REPORTS - num_guaranteed_match
 
     for _ in range(num_noise):
-        # Random event type and district, not tied to any specific ground-truth entry
         event_type = random.choice(all_event_types)
         district = random.choice(all_districts)
 
-        # Timestamp from the GLOBAL range (most will NOT match any ground truth)
         ts = random_timestamp_between(
             GLOBAL_START.strftime("%Y-%m-%dT%H:%M:%S"),
             GLOBAL_END.strftime("%Y-%m-%dT%H:%M:%S")
@@ -196,6 +181,7 @@ def generate_reports():
         report["verificationStatus"] = v["verificationStatus"]
         report["verificationReason"] = v["verificationReason"]
         report["confidence"] = v["confidence"]
+        report["ml_credibility_score"] = v["ml_credibility_score"]
 
         reports.append(report)
         report_id += 1
@@ -216,6 +202,6 @@ def save_to_csv(reports, output_path: str):
 
 if __name__ == "__main__":
     reports = generate_reports()
-    output_csv = "../data/sample_reports.csv"
+    output_csv = "../Data/sample_reports.csv"
     save_to_csv(reports, output_csv)
     print(f"Generated {len(reports)} reports → {output_csv}")

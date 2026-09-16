@@ -1,0 +1,9 @@
+# Python cache
+**/__pycache__/
+*.pyc
+
+# Optional: test / validation scripts if not needed for demo
+# Script/test.py
+# Script/validate*
+# Script/train_verification_model.py
+# Script/load_seed_data.py
